@@ -32,8 +32,6 @@ FRONTEND_ORIGINS = [
 ]
 
 app = Flask(__name__)
-
-app = Flask(__name__)
 CORS(
     app,
     resources={r"/api/*": {"origins": FRONTEND_ORIGINS}},
@@ -481,8 +479,8 @@ def patch_project(project_id):
 
     if "status" in data:
         status = normal_status(data["status"])
-        if status not in {"open", "archived"}:
-            return error("status must be 'open' or 'archived'.", 400)
+        if status not in {"open", "closed"}:
+            return error("status must be 'open' or 'closed'.", 400)
         fields["status"] = status
 
     skills_changed = "requiredSkills" in data
@@ -698,13 +696,14 @@ def patch_application(application_id):
                 aid=application_id,
             ).consume()
 
-        tx.run(
-            """
-            MATCH (p:Project {projectId: $pid})
-            REMOVE p._capacityLock
-            """,
-            pid=row["projectId"],
-        ).consume()
+        if new_status == "accepted":
+            tx.run(
+                """
+                MATCH (p:Project {projectId: $pid})
+                REMOVE p._capacityLock
+                """,
+                pid=row["projectId"],
+            ).consume()
         return ("ok", row["projectId"])
 
     outcome, _ = write_transaction(work)
