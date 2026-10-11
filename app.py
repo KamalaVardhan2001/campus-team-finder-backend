@@ -32,12 +32,15 @@ FRONTEND_ORIGINS = [
 ]
 
 app = Flask(__name__)
+
+app = Flask(__name__)
 CORS(
     app,
     resources={r"/api/*": {"origins": FRONTEND_ORIGINS}},
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["Content-Type", "Authorization", "X-Student-Id"],
     methods=["GET", "POST", "PATCH", "OPTIONS"],
 )
+
 
 print("URI inside app.py:", repr(NEO4J_URI))
 print("Username configured:", bool(NEO4J_USERNAME))
